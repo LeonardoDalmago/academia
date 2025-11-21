@@ -3,70 +3,112 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Produto;
+use App\Models\categoria;
 
 class ProdutoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * LISTAR PRODUTOS
      */
     public function index()
     {
-        return view('produtos.index');
+        $produtos = Produto::with('categoria')
+            ->orderByDesc('id')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('produtos.index', compact('produtos'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * FORM DE CADASTRO
      */
     public function create()
     {
-        return view('produtos.create');
+        // Buscar categorias para o select
+        $categorias = categoria::all();
+        return view('produtos.create', compact('categorias'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * SALVAR PRODUTO NO BANCO
      */
     public function store(Request $request)
     {
-        $produtos = new produtos ([
-            'categoria_id' => $request -> input('categoria_id'),
-            'nome' => $request->input('nome'),
-            'descricao' => $request->input('descricao'),
-            'preco' => $request->input('preco'),
-            'descricao' => $request->input('ativo')
+        $request->validate([
+            'categoria_id' => 'required|exists:categorias,id',
+            'nome' => 'required',
+            'descricao' => 'nullable',
+            'preco' => 'required|numeric',
+            'ativo' => 'nullable|boolean'
         ]);
-        $produtos->save();
-        return redirect()->route('produtos.index');
+
+        Produto::create([
+            'categoria_id' => $request->categoria_id,
+            'nome' => $request->nome,
+            'descricao' => $request->descricao,
+            'preco' => $request->preco,
+            'ativo' => $request->has('ativo') ? 1 : 0,
+        ]);
+
+        return redirect()->route('produtos.index')->with('success', 'Produto criado com sucesso!');
     }
 
     /**
-     * Display the specified resource.
+     * MOSTRAR DETALHES DO PRODUTO
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $produto = Produto::with('categoria')->findOrFail($id);
+        return view('produtos.show', compact('produto'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * FORM DE EDIÇÃO
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $produto = Produto::findOrFail($id);
+        $categorias = categoria::all();
+
+        return view('produtos.edit', compact('produto', 'categorias'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * ATUALIZAR PRODUTO
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'categoria_id' => 'required|exists:categorias,id',
+            'nome' => 'required',
+            'descricao' => 'nullable',
+            'preco' => 'required|numeric',
+            'ativo' => 'nullable|boolean'
+        ]);
+
+        $produto = Produto::findOrFail($id);
+
+        $produto->update([
+            'categoria_id' => $request->categoria_id,
+            'nome' => $request->nome,
+            'descricao' => $request->descricao,
+            'preco' => $request->preco,
+            'ativo' => $request->has('ativo') ? 1 : 0,
+        ]);
+
+        return redirect()->route('produtos.index')->with('success', 'Produto atualizado com sucesso!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * APAGAR PRODUTO
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $produto = Produto::findOrFail($id);
+        $produto->delete();
+
+        return redirect()->route('produtos.index')->with('success', 'Produto excluído com sucesso!');
     }
 }

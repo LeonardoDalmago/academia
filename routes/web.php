@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\AlunoController;
+use App\Http\Controllers\TreinoController;
+use App\Http\Controllers\ProfessorController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('categorias', CategoriaController::class)->middleware('auth');
 Route::resource('produtos', ProdutoController::class)->middleware('auth');
 Route::resource('alunos', AlunoController::class)->middleware('auth');
-
+Route::resource('treinos', TreinoController::class)->middleware('auth');
+Route::resource('professores', ProfessorController::class)->middleware('auth');
 
 require __DIR__.'/auth.php';

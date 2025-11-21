@@ -11,14 +11,22 @@ class CategoriaController extends Controller
      * Display a listing of the resource.
      */
     public function index()
+/*
     {
-        
-        return view('categorias.index');
+        $categorias = Categoria::all();
+        return view('categorias.index', compact('categorias'));
     }
+*/
 
-    /**
-     * Show the form for creating a new resource.
-     */
+{
+    $categorias= Categoria::orderByDesc('id')
+            ->paginate(5)                
+            ->withQueryString();         
+
+        // Retorna a view com as avaliações compact é usado para passar variáveis para a view
+        return view('categorias.index', compact('categorias'));
+
+    }
     public function create()
     {
         return view('categorias.create');
@@ -43,7 +51,8 @@ class CategoriaController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $categoria = Categoria::findOrFail($id);
+        return view('categorias.show', compact('categoria'));
     }
 
     /**
@@ -51,7 +60,9 @@ class CategoriaController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $categoria = Categoria::findOrFail($id);
+        return view('categorias.edit', compact('categoria'));
+
     }
 
     /**
@@ -59,7 +70,15 @@ class CategoriaController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $categoria = Categoria::findOrFail($id);
+
+        $categoria->nome = $request->nome;
+        $categoria->descricao = $request->descricao;
+
+        $categoria->save();
+
+        return redirect()->route('categorias.index')
+        ->with('success', 'Categoria atualizada com sucesso!');
     }
 
     /**
@@ -67,6 +86,11 @@ class CategoriaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $categoria = Categoria::findOrFail($id);
+
+
+        $categoria->delete();
+
+        return redirect()->route('categorias.index');
     }
 }

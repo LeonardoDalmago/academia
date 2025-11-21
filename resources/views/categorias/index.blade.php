@@ -1,9 +1,86 @@
-<x-layouts.app>
-<link rel="stylesheet" href="{{ asset('css/app.css') }}">
-<h1>INDEX</h1>
-<a href="{{ route('categorias.create') }}" class="btn btn-primary">
-    Criar Categoria
-</a>
-<img src="https://conteudo.imguol.com.br/2012/10/19/o-atacante-do-santos-neymar-posa-de-cueca-para-marca-de-roupas-intimas-no-guaruja-191012-nesta-sexta-amigos-do-jogador-afirmaram-que-neymar-estaria-namorando-com-a-atriz-1350681006088_956x682.jpg" alt="">
+<x-layouts.app :title="__('Minhas categorias')">
+    <head>
+      <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <div class="container">
+        <div class="header">
+            <h1>Minhas Categorias</h1>
+            <a href="{{ route('categorias.create') }}" class="btn">+ Nova Categoria</a>
+        </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th style="width: 180px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($categorias as $categoria)
+                        <tr>
+                            <td>{{ $categoria->id }}</td>
+                            <td>{{ $categoria->nome }}</td>
+                            <td title="{{ $categoria->descricao }}">
+                                {{ Str::limit($categoria->descricao, 80) }}
+                            </td>
+                            <td>
+                                <a href="{{ route('categorias.show', $categoria) }}" class="link blue">Ver</a>
+                                <a href="{{ route('categorias.edit', $categoria) }}" class="link yellow">Editar</a>
+                                <form action="{{ route('categorias.destroy', $categoria) }}" method="POST" class="inline form-excluir">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <a 
+                                        href="#" 
+                                        class="link red btn-excluir" 
+                                        data-nome="{{ $categoria->nome }}">
+                                        Excluir
+                                    </a>
+                                </form>
+
+
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @if ($categorias->hasPages())
+            <div class="pagination">
+                <div class="pagination-info">
+                    {{ $categorias->firstItem() }}–{{ $categorias->lastItem() }}
+                    de {{ $categorias->total() }}
+                </div>
+                <div class="pagination-links">
+                    {{ $categorias->links() }}
+                </div>
+            </div>
+        @endif
+    </div>
+    <script>
+document.querySelectorAll('.btn-excluir').forEach(button => {
+    button.addEventListener('click', function (e) {
+        e.preventDefault();
+        let form = this.closest('form');
+        let nome = this.getAttribute('data-nome');
+
+        Swal.fire({
+            title: 'Excluir categoria?',
+            text: `Você realmente deseja excluir "${nome}"? Essa ação não pode ser desfeita.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 
 </x-layouts.app>
